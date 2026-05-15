@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: raish_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: raish_db
+      POSTGRES_USER: raish
+      POSTGRES_PASSWORD: raish
+    ports:
+      - "5432:5432"
+    volumes:
+      - raish_pg_data:/var/lib/postgresql/data
+
+volumes:
+  raish_pg_data:
+
+# docker exec -it raish_postgres psql -U raish -d raish_db
