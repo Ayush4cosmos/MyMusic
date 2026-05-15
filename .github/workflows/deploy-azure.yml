@@ -1,4 +1,4 @@
-name: Deploy to Azure App Service
+name: Deploy to Azure VM via SSH
 
 on:
   push:
@@ -8,31 +8,32 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Login to Azure
-        uses: azure/login@v1
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          host: ${{ secrets.AZURE_VM_HOST }}
+          username: ${{ secrets.AZURE_VM_USER }}
+          password: ${{ secrets.AZURE_VM_PASSWORD }}
+          script: |
+            cd ~/MyMusic
+            
+            # Pull latest code from main branch
+            git pull origin main
+            
+            # Log in with GitHub PAT (for private repos)
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # Stop running containers
+            docker compose down
+            
+            # Pull latest images
+            docker compose pull
+            
+            # Start containers with updated code
+            docker compose up -d
+            
+            # Show logs
+            docker compose logs -f backend
 
-      - name: Build and push Docker image
-        uses: azure/docker-login@v1
-        with:
-          login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - run: |
-          docker build -f backend/Dockerfile -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/raish-backend:${{ github.sha }} backend/
-          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/raish-backend:${{ github.sha }}
-
-      - name: Deploy to Azure App Service
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: raish-backend
-          images: ${{ secrets.REGISTRY_LOGIN_SERVER }}/raish-backend:${{ github.sha }}
-
-      - name: Azure logout
-        run: |
-          az logout
