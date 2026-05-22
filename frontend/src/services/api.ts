@@ -1,4 +1,4 @@
-﻿const RAW_BASE = import.meta.env.VITE_API_BASE ?? "";
+﻿const RAW_BASE = import.meta.env.VITE_API_URL ?? "";
 const API_BASE = RAW_BASE.endsWith("/") ? RAW_BASE.slice(0, -1) : RAW_BASE;
 
 const GUEST_ID_KEY = "guestId";
