@@ -1,12 +1,13 @@
 # backend/app/sources/jiosaavn.py
 import httpx
+import os
 from typing import List, Dict, Any, Optional, AsyncIterator, Tuple
 from fastapi import HTTPException
 from .base import ExternalSourceAdapter
 
 
 class JioSaavnAdapter(ExternalSourceAdapter):
-    BASE_URL = "http://localhost:3000"
+    BASE_URL = os.getenv("JIOSAAVN_API_URL", "https://jiosaavn-api.ayush4maphy.workers.dev")
 
     def _pick_image_url(self, images: Any) -> Optional[str]:
         if isinstance(images, list) and images:
