@@ -1,10 +1,11 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Generator
 
 from app.db.models import *  # 🔑 registers all tables
 
-DATABASE_URL = "postgresql+psycopg2://raish:raish@localhost:5432/raish_db"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg2://raish:raish@localhost:5432/raish_db")
 
 engine = create_engine(
     DATABASE_URL,
