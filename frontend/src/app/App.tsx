@@ -14,6 +14,8 @@ import { useAuthStore } from "../stores/authStore";
 import { usePlaybackStore } from "../stores/playbackStore";
 import { usePlaylistStore } from "../stores/playlistStore";
 
+const INTERNATIONAL_CATALOG_ALERT_KEY = "raish-dismissed-international-catalog-alert";
+
 export default function App() {
   const token = useAuthStore((state) => state.token);
   const username = useAuthStore((state) => state.username);
@@ -36,10 +38,18 @@ export default function App() {
   const [activeSearchTab, setActiveSearchTab] = useState<SearchTab>("songs");
   const [libraryFilter, setLibraryFilter] = useState<LibraryFilter>("all");
   const [showNowPlayingCard, setShowNowPlayingCard] = useState(false);
+  const [showInternationalCatalogAlert, setShowInternationalCatalogAlert] = useState(false);
+  const [isCatalogAlertDismissed, setIsCatalogAlertDismissed] = useState(false);
 
   useEffect(() => {
     initAuth();
   }, [initAuth]);
+
+  useEffect(() => {
+    const dismissed = window.localStorage.getItem(INTERNATIONAL_CATALOG_ALERT_KEY) === "1";
+    setIsCatalogAlertDismissed(dismissed);
+    setShowInternationalCatalogAlert(!dismissed);
+  }, []);
 
   useEffect(() => {
     void loadQueue();
@@ -88,8 +98,63 @@ export default function App() {
 
   const searchVisible = isSearchActive && searchQuery.trim().length > 0;
 
+  const dismissInternationalCatalogAlert = () => {
+    window.localStorage.setItem(INTERNATIONAL_CATALOG_ALERT_KEY, "1");
+    setIsCatalogAlertDismissed(true);
+    setShowInternationalCatalogAlert(false);
+  };
+
   return (
     <div className="h-screen w-screen overflow-hidden">
+      {showInternationalCatalogAlert ? (
+        <div className="pointer-events-none fixed left-4 top-4 z-50 max-w-[360px]">
+          <div className="pointer-events-auto flex items-start gap-3 rounded-2xl border border-amber-200/80 bg-white/95 px-4 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.12)] backdrop-blur">
+            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 8v5" />
+                <path d="M12 17h.01" />
+                <path d="M10.3 4.3 2.6 18a2 2 0 0 0 1.7 3h15.5a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0Z" />
+              </svg>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-slate-900">International catalog is down</div>
+              <div className="mt-0.5 text-xs leading-5 text-slate-600">
+                International artists (Non-Indian) may not load right now. We're fixing it and also coming up with major changes and features in a month. Stay tuned for <b>Major updates!</b>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={dismissInternationalCatalogAlert}
+              className="rounded-lg p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+              aria-label="Dismiss catalog alert"
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6 6 18" />
+                <path d="m6 6 12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      ) : isCatalogAlertDismissed ? (
+        <button
+          type="button"
+          onClick={() => setShowInternationalCatalogAlert(true)}
+          className="fixed left-4 top-4 z-50 flex items-center gap-2 rounded-full border border-amber-200/80 bg-white/95 px-3 py-2 text-xs font-semibold text-slate-700 shadow-[0_18px_40px_rgba(15,23,42,0.12)] backdrop-blur transition hover:bg-slate-50"
+          aria-label="Show international catalog alert"
+        >
+          <span className="relative flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 8v5" />
+              <path d="M12 17h.01" />
+              <path d="M10.3 4.3 2.6 18a2 2 0 0 0 1.7 3h15.5a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0Z" />
+            </svg>
+            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-none text-white">
+              1
+            </span>
+          </span>
+          Catalog alert
+        </button>
+      ) : null}
       <div className="flex h-full w-full flex-col gap-2 px-2 pb-2 pt-2">
         <div className="grid items-center gap-3 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)_minmax(0,360px)]">
           <div className="hidden lg:block" />
